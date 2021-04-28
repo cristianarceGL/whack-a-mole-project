@@ -1,57 +1,61 @@
 import "./styles.css";
 
-const holes = document.querySelectorAll('.hole');
-const scoreBoard = document.querySelector('.score');
-const moles = document.querySelectorAll('.mole');
-let lastHole;
-let timeUp = false;
-let score = 0;
+var holes = document.querySelectorAll(".hole");
+var scoreBoard = document.querySelector(".score");
+var moles = document.querySelectorAll(".mole");
+var lastHole;
+var timeUp = false;
+var score = 0;
+var defaultPlayer = { name: "Player", maxScore: 0, isActive: true };
 
-//create a function to make a random time for mole to pop from the hole
-function randomTime(min, max) {
-  return Math.round(Math.random() * (max - min) + min);
+function randomTime(a, b) {
+  return Math.round(Math.random() * (a - b) + b);
 }
 
-function randomHole(holes) {
-  const index = Math.floor(Math.random() * holes.length);
-  const hole = holes[index];
-
-  //prevent same hole from getting the same number
-  if (hole === lastHole) {
-    return randomHole(holes);
-  }
-  lastHole = hole;
-  return hole;
+function randomHoleWhereTheModeWillPopUp(holes) {
+  var i = Math.floor(Math.random() * holes.length);
+  var h = holes[i];
+  if (h === lastHole) return randomHoleWhereTheModeWillPopUp(holes);
+  lastHole = h;
+  return h;
 }
 
 function peep() {
-  const time = randomTime(500, 1000); //get a random time to determine how long mole should peep
-  const hole = randomHole(holes); //get the random hole from the randomHole function
-  hole.classList.add('up'); //add the CSS class so selected mole can "pop up"
+  // peep starts
+  var time = randomTime(500, 1000); //get a random time
+  var hole = randomHoleWhereTheModeWillPopUp(holes); //get the random hole from the randomHole function
+  hole.classList.add("up"); //add the CSS class so selected mole can "pop up"
   setTimeout(() => {
-    hole.classList.remove('up'); //make the selected mole "pop down" after a random time
+    // add a timeout for removing the class for popping up moles
+    hole.classList.remove("up"); //make the selected mole "pop down" after a random time
     if (!timeUp) {
-      peep();
+      // if time is no over, keep invoking moles
+      peep(); //calls recursively the peep
     }
-  }, time);
+  }, time); // peep ends
 }
 
-function startGame() {
+function game(player = defaultPlayer) {
+  var name = player.name;
+  var maxScore = player.maxScore;
+  var isActive = player.isActive;
+
   scoreBoard.textContent = 0;
   timeUp = false;
   score = 0;
   peep();
-  setTimeout(() => timeUp = true, 15000) //show random moles for 15 seconds
+  setTimeout(() => (timeUp = true), 15000);
 }
 
-function wack(e) {
-  if (!e.isTrusted) return; //** new thing I learned */
+function WACK(e) {
+  if (!e.isTrusted) return;
   score++;
-  this.parentNode.classList.remove('up'); //this refers to item clicked
+  this.parentNode.classList.remove("up");
   scoreBoard.textContent = score;
 }
 
-moles.forEach(mole => mole.addEventListener('click', wack))
+for (var m1 = 0; m1 < moles.length; m1++) {
+  moles[m1].addEventListener("click", WACK);
+}
 
-// Allows the game to start
-window.startGame = startGame;
+window.game = game;
